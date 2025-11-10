@@ -242,6 +242,16 @@ function generateEnrollmentHtml(enrollmentDetails) {
         return '<p>Not enrolled in any courses currently.</p>';
     }
 
+    // Get the student ID once from the local storage
+    const studentId = localStorage.getItem('userType') === 'student'
+        ? document.getElementById('enrollment-student-id').value
+        : null;
+
+    if (!studentId) {
+        // This case should not happen if the user is logged in as a student
+        return '<p>Error: Could not retrieve student ID.</p>';
+    }
+
     const rows = enrollmentDetails.map(course => `
         <tr>
             <td>${course.courseId}</td>
@@ -250,6 +260,14 @@ function generateEnrollmentHtml(enrollmentDetails) {
             <td>${course.grade || 'N/A'}</td>
             <td>${course.semester}</td>
             <td>${course.year}</td>
+            <td>
+                <button 
+                    class="unenroll-btn" 
+                    onclick="handleUnenrollmentEvent('${studentId}', '${course.courseId}')"
+                    title="Unenroll from ${course.courseName}"
+                >
+                    &times; </button>
+            </td>
         </tr>
     `).join('');
 
@@ -263,7 +281,7 @@ function generateEnrollmentHtml(enrollmentDetails) {
                     <th>Grade</th>
                     <th>Sem</th>
                     <th>Year</th>
-                </tr>
+                    <th>Action</th> </tr>
             </thead>
             <tbody>${rows}</tbody>
         </table>
@@ -289,6 +307,23 @@ async function handleEnrollmentEvent(event) {
         displayStudentInfo(localStorage.getItem('loggedInEmail'));
     } catch (error) {
         showToast(error.message || 'Enrollment failed.', 'error');
+    }
+}
+
+async function handleUnenrollmentEvent(studentId, courseId) {
+    try {
+        await apiCall(`${API_BASE_URL}/registration/unenroll`, {
+            method: 'POST',
+            body: JSON.stringify({
+                studentId: studentId,
+                courseId: courseId,
+            })
+        });
+
+        showToast('Unenrolled successfully!', 'success');
+        displayStudentInfo(localStorage.getItem('loggedInEmail'));
+    } catch (error) {
+        showToast(error.message || 'Unenrollment failed.', 'error');
     }
 }
 

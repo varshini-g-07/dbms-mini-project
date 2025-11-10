@@ -12,6 +12,7 @@ import com.courseregistration.service.RegistrationService;
 import com.courseregistration.service.RetrievalService;
 import com.courseregistration.model.Student;
 import com.courseregistration.model.StudentRegistrationRequest;
+import com.courseregistration.model.UnenrollmentRequest;
 import com.courseregistration.model.Admin;
 import com.courseregistration.model.AdminRegistrationRequest;
 import com.courseregistration.model.Course;
@@ -68,7 +69,7 @@ public class Controller {
     public ResponseEntity<?> registerNewAdmin(@RequestBody AdminRegistrationRequest request) {
         try {
             Admin admin = registrationService.addNewAdmin(request.getEmail(), request.getPassword());
-            return new ResponseEntity<>(admin, HttpStatus.CREATED);
+            return new ResponseEntity<>(admin, HttpStatus.OK);
         } catch (IllegalArgumentException e) {
             return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
         } catch (Exception e) {
@@ -89,7 +90,7 @@ public class Controller {
                     request.getLastName(),
                     request.getEmail(),
                     request.getPassword());
-            return new ResponseEntity<>(newStudent, HttpStatus.CREATED);
+            return new ResponseEntity<>(newStudent, HttpStatus.OK);
         } catch (IllegalArgumentException e) {
             return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
         } catch (Exception e) {
@@ -112,7 +113,7 @@ public class Controller {
                     request.getRating(),
                     request.getCertificateType(),
                     request.getDuration());
-            return new ResponseEntity<>(newCourse, HttpStatus.CREATED);
+            return new ResponseEntity<>(newCourse, HttpStatus.OK);
         } catch (IllegalArgumentException e) {
             return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
         } catch (Exception e) {
@@ -130,12 +131,25 @@ public class Controller {
         try {
             boolean status = registrationService.enrollStudentInCourse(request.getStudentId(), request.getCourseId(),
                     request.getYear(), request.getSemester());
-            return new ResponseEntity<>(status, HttpStatus.CREATED);
+            return new ResponseEntity<>(status, HttpStatus.OK);
 
         } catch (IllegalArgumentException e) {
             return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
         } catch (Exception e) {
-            return new ResponseEntity<>("Internal Server Error during registration.", HttpStatus.INTERNAL_SERVER_ERROR);
+            return new ResponseEntity<>("Internal Server Error during enrollment.", HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    @PostMapping("/registration/unenroll")
+    public ResponseEntity<?> unenrollStudentFromCourse(@RequestBody UnenrollmentRequest request) {
+        try {
+            boolean status = registrationService.handleUnenrollment(request.getStudentId(), request.getCourseId());
+            return new ResponseEntity<>(status, HttpStatus.OK);
+
+        } catch (IllegalArgumentException e) {
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
+        } catch (Exception e) {
+            return new ResponseEntity<>("Internal Server Error during unenrollment.", HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
