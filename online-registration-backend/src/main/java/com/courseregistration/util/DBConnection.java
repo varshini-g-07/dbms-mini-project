@@ -9,6 +9,7 @@ public class DBConnection {
     private static final String PASSWORD = "faunandfloraas";
 
     public static Connection getConnection() throws SQLException {
+        System.out.println("creating connection here...");
         return DriverManager.getConnection(URL, USER, PASSWORD);
     }
 }

@@ -1,157 +1,101 @@
 package com.courseregistration.dao;
 
 import com.courseregistration.model.EnrollmentDetail;
-import com.courseregistration.util.DBConnection;
-import java.sql.*;
+//import org.springframework.dao.EmptyResultDataAccessException;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.RowMapper;
+import org.springframework.stereotype.Repository;
+
 import java.time.LocalDate;
-import java.util.ArrayList;
 import java.util.List;
 
+@Repository
 public class EnrollmentDAO {
-    public boolean registerStudentForCourse(int studentId, String courseId, String semester, int year) {
-        LocalDate enrollmentDate = LocalDate.now();
-        
-        String sql = "INSERT INTO Enrollments (Student_ID, Course_ID, Semester, Year, Grade, Enrollment_Date) " + "VALUES (?, ?, ?, ?, ?, ?)";;
-        
-        try (Connection conn = DBConnection.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
 
-            stmt.setInt(1, studentId);
-            stmt.setString(2, courseId);
-            stmt.setString(3, semester);
-            stmt.setInt(4, year);
-            stmt.setString(5, "IP");
-            stmt.setDate(6, Date.valueOf(enrollmentDate));
-            
-            int rowsAffected = stmt.executeUpdate();
-            
-            return rowsAffected > 0;
+    private final JdbcTemplate jdbcTemplate;
 
-        } catch (SQLException e) {
-            System.err.println("Error during course registration: " + e.getMessage());
-            return false;
-        }
+    // RowMapper for combining Course and Enrollment data into EnrollmentDetail
+    private final RowMapper<EnrollmentDetail> enrollmentDetailRowMapper = (rs, rowNum) -> new EnrollmentDetail(
+            rs.getString("Course_ID"),
+            rs.getString("Course_Name"),
+            rs.getString("Partner"),
+            rs.getString("Semester"),
+            rs.getInt("Year"),
+            rs.getString("Grade"));
+
+    public EnrollmentDAO(JdbcTemplate jdbcTemplate) {
+        this.jdbcTemplate = jdbcTemplate;
     }
 
-    public boolean checkIfAlreadyEnrolled(int studentId, String courseId) {
-        String sql = "SELECT COUNT(*) FROM Enrollments WHERE Student_ID = ? AND Course_ID = ?";
-        
-        try (Connection conn = DBConnection.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
-
-            stmt.setInt(1, studentId);
-            stmt.setString(2, courseId);
-            
-            try (ResultSet rs = stmt.executeQuery()) {
-                if (rs.next()) {
-                    return rs.getInt(1) > 0;
-                }
-            }
-        } catch (SQLException e) {
-            System.err.println("Database error during enrollment check: " + e.getMessage());
-            return false; 
-        }
-        return false;
+    /**
+     * Inserts a new enrollment record.
+     */
+    public boolean registerStudentForCourse(int studentId, String courseId, String semester, int year,
+            LocalDate enrollment_date) {
+        String sql = "INSERT INTO Enrollments (Student_ID, Course_ID, Semester, Year, Grade, Enrollment_Date) VALUES (?, ?, ?, ?, ?, ?)";
+        // Grade is initialized to 'IP' (In Progress)
+        int rowsAffected = jdbcTemplate.update(sql, studentId, courseId, semester, year, "IP", enrollment_date);
+        return rowsAffected > 0;
     }
 
-    public List<EnrollmentDetail> getStudentEnrollments(int studentId) {
-        List<EnrollmentDetail> enrollments = new ArrayList<>();
-        
-        String sql = "SELECT E.Course_ID, E.Semester, E.Year, E.Grade, C.Course_Name, C.Partner " + 
-        "FROM Enrollments E " + "JOIN Courses C ON E.Course_ID = C.Course_ID " + "WHERE E.Student_ID = ?";
-        
-        try (Connection conn = DBConnection.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
-
-            stmt.setInt(1, studentId);
-            
-            try (ResultSet rs = stmt.executeQuery()) {
-                while (rs.next()) {
-                    EnrollmentDetail detail = new EnrollmentDetail(
-                        rs.getString("Course_ID"),
-                        rs.getString("Course_Name"),
-                        rs.getString("Partner"),
-                        rs.getString("Semester"),
-                        rs.getInt("Year"),
-                        rs.getString("Grade")
-                    );
-                    enrollments.add(detail);
-                }
-            }
-        } catch (SQLException e) {
-            System.err.println("Database error retrieving enrollments: " + e.getMessage());
-        }
-        return enrollments;
-    }
-
+    /**
+     * Deletes a specific enrollment record.
+     */
     public boolean unenrollStudent(int studentId, String courseId) {
         String sql = "DELETE FROM Enrollments WHERE Student_ID = ? AND Course_ID = ?";
-        
-        try (Connection conn = DBConnection.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
-
-            stmt.setInt(1, studentId);
-            stmt.setString(2, courseId);
-            
-            int rowsAffected = stmt.executeUpdate();
-            return rowsAffected > 0;
-
-        } catch (SQLException e) {
-            System.err.println("Database error during unenrollment: " + e.getMessage());
-            return false;
-        }
+        int rowsAffected = jdbcTemplate.update(sql, studentId, courseId);
+        return rowsAffected > 0;
     }
-    
+
+    /**
+     * Checks if a student is already registered for a specific course.
+     */
+    public boolean checkIfAlreadyEnrolled(int studentId, String courseId) {
+        String sql = "SELECT COUNT(*) FROM Enrollments WHERE Student_ID = ? AND Course_ID = ?";
+        // Use queryForObject(String, Class<T>, Object...) to get a single value
+        Integer count = jdbcTemplate.queryForObject(sql, Integer.class, studentId, courseId);
+        return count != null && count > 0;
+    }
+
+    /**
+     * Checks if a student has ANY active enrollments (used before deleting
+     * student).
+     */
     public boolean hasAnyEnrollments(int studentId) {
         String sql = "SELECT COUNT(*) FROM Enrollments WHERE Student_ID = ?";
-        
-        try (Connection conn = DBConnection.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
-
-            stmt.setInt(1, studentId);
-            
-            try (ResultSet rs = stmt.executeQuery()) {
-                if (rs.next()) {
-                    return rs.getInt(1) > 0;
-                }
-            }
-        } catch (SQLException e) {
-            System.err.println("Database error during enrollment check: " + e.getMessage());
-        }
-        return false;
+        Integer count = jdbcTemplate.queryForObject(sql, Integer.class, studentId);
+        return count != null && count > 0;
     }
 
+    /**
+     * Retrieves all enrollment details and course info for a given student ID using
+     * a JOIN.
+     */
+    public List<EnrollmentDetail> getStudentEnrollments(int studentId) {
+        String sql = "SELECT E.Course_ID, E.Semester, E.Year, E.Grade, C.Course_Name, C.Partner " +
+                "FROM Enrollments E " +
+                "JOIN Courses C ON E.Course_ID = C.Course_ID " +
+                "WHERE E.Student_ID = ?";
+
+        return jdbcTemplate.query(sql, enrollmentDetailRowMapper, studentId);
+    }
+
+    /**
+     * Checks if a course has any active student enrollments (used before deleting
+     * course).
+     */
     public boolean hasStudentsEnrolled(String courseId) {
         String sql = "SELECT COUNT(*) FROM Enrollments WHERE Course_ID = ?";
-        
-        try (Connection conn = DBConnection.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
-
-            stmt.setString(1, courseId);
-            
-            try (ResultSet rs = stmt.executeQuery()) {
-                if (rs.next()) {
-                    return rs.getInt(1) > 0;
-                }
-            }
-        } catch (SQLException e) {
-            System.err.println("Database error during course enrollment check: " + e.getMessage());
-        }
-        return false;
+        Integer count = jdbcTemplate.queryForObject(sql, Integer.class, courseId);
+        return count != null && count > 0;
     }
 
-    public int deleteEnrollmentsByCourseId(String courseId) {
+    /**
+     * Deletes ALL enrollment records associated with a specific course.
+     */
+    public boolean deleteEnrollmentsByCourseId(String courseId) {
         String sql = "DELETE FROM Enrollments WHERE Course_ID = ?";
-        
-        try (Connection conn = DBConnection.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
-
-            stmt.setString(1, courseId);
-            return stmt.executeUpdate();
-
-        } catch (SQLException e) {
-            System.err.println("Database error deleting enrollments for course " + courseId + ": " + e.getMessage());
-            return -1;
-        }
+        int rowsAffected = jdbcTemplate.update(sql, courseId);
+        return rowsAffected >= 0; // returns true even if 0 rows are affected (meaning no enrollments existed)
     }
 }

@@ -1,5 +1,5 @@
 -- Table 1: Students (Strong Entity)
-CREATE TABLE Students (
+CREATE TABLE IF NOT EXISTS Students (
     Student_ID INT PRIMARY KEY AUTO_INCREMENT,
     First_Name VARCHAR(50) NOT NULL,
     Last_Name VARCHAR(50) NOT NULL,
@@ -7,7 +7,7 @@ CREATE TABLE Students (
 );
 
 -- Table 2: Courses (Strong Entity)
-CREATE TABLE Courses (
+CREATE TABLE IF NOT EXISTS Courses (
     Course_ID VARCHAR(10) PRIMARY KEY,
     Partner VARCHAR(100) NOT NULL,
     Course_Name VARCHAR(100) NOT NULL,
@@ -17,9 +17,9 @@ CREATE TABLE Courses (
 );
 
 -- Table 3: Enrollments (Associative Entity/Linking Table)
-CREATE TABLE Enrollments (
+CREATE TABLE IF NOT EXISTS Enrollments (
     Enrollment_ID INT PRIMARY KEY AUTO_INCREMENT,
-    Student_ID VARCHAR(10) NOT NULL,
+    Student_ID INT NOT NULL,
     Course_ID VARCHAR(10) NOT NULL,
     Semester VARCHAR(10) NOT NULL,
     Year YEAR NOT NULL,

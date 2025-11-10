@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Course Registration</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        #register-student-container {
+            display: none;
+        }
+
+        #register-admin-container {
+            display: none;
+        }
+
+        #student-container {
+            display: none;
+        }
+
+        #admin-container {
+            display: none;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="login-container">
+        <h2>Login</h2>
+        <form id="login-form" onsubmit="handleLogin(event)">
+            <div>
+                <label for="email">Email:</label>
+                <input type="text" id="email" name="email">
+            </div>
+            <div>
+                <label for="password">Password:</label>
+                <input type="password" id="password" name="password">
+            </div>
+            <div>
+                <label for="isAdmin">Admin:</label>
+                <input type="checkbox" id="isAdmin" name="isAdmin">
+            </div>
+            <button type="submit">Login</button>
+            <div id="no-account-card">
+                <p>Don't have an account?</p>
+                <a href="#" onclick="showStudentRegistrationView(); return false;">Register as a Student</a><br />
+                <a href="#" onclick="showAdminRegistrationView(); return false;">Register as an Admin</a>
+            </div>
+        </form>
+    </div>
+
+    <div id="register-student-container">
+        <h2>Register Student</h2>
+        <form id="register-student-form" onsubmit="handleStudentRegistration(event)">
+            <div>
+                <label for="student-first-name">First Name</label>
+                <input type="text" id="student-first-name" name="first-name">
+            </div>
+            <div>
+                <label for="student-last-name">Last Name</label>
+                <input type="text" id="student-last-name" name="last-name">
+            </div>
+            <div>
+                <label for="student-email">Email</label>
+                <input type="text" id="student-email" name="email">
+            </div>
+            <div>
+                <label for="student-password">Password</label>
+                <input type="password" id="student-password" name="password">
+            </div>
+            <button type="submit">Register</button>
+            <p>
+                <a href="#" onclick="showLoginView(); return false;">Back to Login</a>
+            </p>
+        </form>
+    </div>
+
+    <div id="register-admin-container">
+        <h2>Register Admin</h2>
+        <form id="register-admin-form" onsubmit="handleAdminRegistration(event)">
+            <div>
+                <label for="admin-email">Email</label>
+                <input type="text" id="admin-email" name="email">
+            </div>
+            <div>
+                <label for="admin-password">Password</label>
+                <input type="password" id="admin-password" name="password">
+            </div>
+            <button type="submit">Register</button>
+            <p>
+                <a href="#" onclick="showLoginView(); return false;">Back to Login</a>
+            </p>
+        </form>
+    </div>
+    <div id="student-container">
+        <div id="student-details-container">
+            <!-- Student data will be dynamically inserted here -->
+            <p>Loading student information...</p>
+        </div>
+        <div id="enrollment-form-container">
+            <h1>Enroll in a Course</h1>
+            <form id="enrollment-form" onsubmit="handleEnrollmentEvent(event)">
+                <div>
+                    <label for="enrollment-student-id">Student ID</label>
+                    <input type="text" id="enrollment-student-id" name="student-id">
+                </div>
+                <div>
+                    <label for="enrollment-course-id">Course ID</label>
+                    <input type="text" id="enrollment-course-id" name="course-id">
+                </div>
+                <div>
+                    <label for="enrollment-year">Year</label>
+                    <input type="text" id="enrollment-year" name="year">
+                </div>
+                <div>
+                    <label for="enrollment-semester">Semester</label>
+                    <input type="text" id="enrollment-semester" name="semester">
+                </div>
+                <button type="submit">Enroll</button>
+            </form>
+        </div>
+    </div>
+    <div id="admin-container">
+        <div id="admin-details-container">
+            <!-- Admin data will be dynamically inserted here -->
+            <p>Loading admin information...</p>
+        </div>
+        <div id="course-form-container">
+            <h1>Add New Course</h1>
+            <form id="add-course-form" onsubmit="handleCourseAddition(event)">
+                <div>
+                    <label for="add-course-id">Course ID</label>
+                    <input type="text" id="add-course-id" name="course-id">
+                </div>
+                <div>
+                    <label for="add-course-name">Course Name</label>
+                    <input type="text" id="add-course-name" name="course-name">
+                </div>
+                <div>
+                    <label for="add-course-partner">Partner</label>
+                    <input type="text" id="add-course-partner" name="partner">
+                </div>
+                <div>
+                    <label for="add-course-rating">Rating</label>
+                    <input type="text" id="add-course-rating" name="rating">
+                </div>
+                <div>
+                    <label for="add-course-certificate-type">Certificate Type</label>
+                    <input type="text" id="add-course-certificate-type" name="certificate-type">
+                </div>
+                <div>
+                    <label for="add-course-duration">Duration</label>
+                    <input type="text" id="add-course-duration" name="duration">
+                </div>
+                <button type="submit">Add</button>
+            </form>
+        </div>
+
+    </div>
+    <div id="toast-container"></div>
+
+    <script>
+        const API_BASE_URL = 'http://localhost:8080/api/v1';
+        /**
+         * Wrapper for API calls with built-in error handling and JSON processing.
+         */
+        async function apiCall(url, options = {}) {
+            try {
+                const response = await fetch(url, {
+                    ...options,
+                    headers: {
+                        'Content-Type': 'application/json',
+                        ...options.headers,
+                    },
+                });
+
+                const readResponseBody = async (res) => {
+                    // No Content (204) or zero Content-Length
+                    if (res.status === 204 || res.headers.get("content-length") === "0") {
+                        return {};
+                    }
+                    const contentType = res.headers.get("content-type");
+                    if (contentType && contentType.indexOf("application/json") !== -1) {
+                        return await res.json();
+                    } else {
+                        return await res.text();
+                    }
+                };
+
+                if (response.ok) {
+                    const successData = await readResponseBody(response);
+                    return successData;
+                }
+
+                const errorData = await readResponseBody(response);
+                let errorMessage;
+                if (typeof errorData === 'string') {
+                    errorMessage = errorData || `API call failed with status ${response.status}.`;
+                } else if (typeof errorData === 'object' && errorData !== null && errorData.message) {
+                    errorMessage = errorData.message;
+                } else {
+                    errorMessage = `API call failed with status ${response.status}.`;
+                }
+
+                throw new Error(errorMessage);
+
+            } catch (error) {
+                console.error("API Error:", error.message);
+                throw error;
+            }
+        }
+
+        function showToast(message, type = 'info') {
+            const container = document.getElementById('toast-container');
+
+            // Create toast element
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            toast.textContent = message;
+
+            // Append to container
+            container.appendChild(toast);
+
+            // Remove after 3 seconds
+            setTimeout(() => {
+                toast.classList.add('fade-out');
+                // Wait for animation to finish before actually removing the element
+                toast.addEventListener('animationend', () => {
+                    toast.remove();
+                });
+            }, 3000);
+        }
+
+        function showLoginView() {
+            document.getElementById('login-container').style.display = 'block';
+            document.getElementById('register-admin-container').style.display = 'none';
+            document.getElementById('register-student-container').style.display = 'none';
+        }
+
+        async function handleLogin(event) {
+            event.preventDefault();
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const admin = document.getElementById('isAdmin').checked;
+            try {
+                const response = await apiCall(`${API_BASE_URL}/login`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        email: email,
+                        password: password,
+                        admin: admin
+                    })
+                });
+                if (response == "admin") {
+                    localStorage.setItem('loggedInEmail', email);
+                    displayAdminInfo(email);
+                } else if (response == "student") {
+                    localStorage.setItem('loggedInEmail', email);
+                    displayStudentInfo(email);
+                } else {
+                    showToast('Login failed. Please check your credentials.');
+                }
+            } catch (error) {
+                console.error('Error during login:', error);
+                showToast('Login error. Please try again.');
+            }
+        }
+
+        function showStudentRegistrationView() {
+            document.getElementById('login-container').style.display = 'none';
+            document.getElementById('register-admin-container').style.display = 'none';
+            document.getElementById('register-student-container').style.display = 'block';
+        }
+
+        async function handleStudentRegistration(event) {
+            event.preventDefault();
+            const firstName = document.getElementById('student-first-name').value;
+            const lastName = document.getElementById('student-last-name').value;
+            const email = document.getElementById('student-email').value;
+            const password = document.getElementById('student-password').value;
+
+            try {
+                const response = await apiCall(`${API_BASE_URL}/registration/student`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        firstName: firstName,
+                        lastName: lastName,
+                        email: email,
+                        password: password
+                    })
+                });
+            } catch (error) {
+                console.error('Error during registration:', error);
+                showToast('Registration error. Please try again.');
+            }
+        }
+
+        function showAdminRegistrationView() {
+            document.getElementById('login-container').style.display = 'none';
+            document.getElementById('register-admin-container').style.display = 'block';
+            document.getElementById('register-student-container').style.display = 'none';
+        }
+
+        function hideAllAuthViews() {
+            document.getElementById('login-container').style.display = 'none';
+            document.getElementById('register-admin-container').style.display = 'none';
+            document.getElementById('register-student-container').style.display = 'none';
+        }
+
+        async function handleAdminRegistration(event) {
+            event.preventDefault();
+            const email = document.getElementById('admin-email').value;
+            const password = document.getElementById('admin-password').value;
+
+            try {
+                const response = await apiCall(`${API_BASE_URL}/registration/admin`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        email: email,
+                        password: password
+                    })
+                });
+            } catch (error) {
+                console.error('Error during registration:', error);
+                showToast('Registration error. Please try again.');
+            }
+        }
+
+        async function getStudent(email) {
+            const url = `${API_BASE_URL}/student?email=${encodeURIComponent(email)}`;
+            try {
+                const studentResponse = await apiCall(url, {
+                    method: 'GET',
+                });
+                return studentResponse;
+            } catch (error) {
+                console.error('Error retrieving student:', error);
+                showToast(`Failed to retrieve student: ${error.message}`);
+                return null;
+            }
+        }
+
+        /**
+         * Dynamically displays the student information within the container.
+         */
+        async function displayStudentInfo(email) {
+            hideAllAuthViews();
+            const studentDetails = await getStudent(email);
+            if (!studentDetails) {
+                // Handle case where getStudent fails
+                return;
+            }
+            const container = document.getElementById('student-details-container');
+
+            const enrollmentDetails = studentDetails.enrollmentDetails;
+            const enrollmentHtml = generateEnrollmentHtml(enrollmentDetails);
+
+            const student = studentDetails.student;
+            const content = `
+                <div id="student-details-card">
+                    <p>Name: ${student.firstName} ${student.lastName}</p>
+                    <p>Student ID: ${student.studentId}</p>
+                    <p>Email: ${student.email}</p>
+                </div>
+                <div id="student-enrolled-courses-card">
+                    <h1> Enrolled Courses </h1>
+                    <div id="student-enrolled-courses-list">
+                        ${enrollmentHtml}
+                    </div>
+                </div>
+            `;
+            if (container) {
+                container.innerHTML = content;
+            }
+            document.getElementById('student-container').style.display = 'block';
+            document.getElementById('enrollment-form').reset();
+        }
+
+        // Function to generate the HTML for the courses list
+        function generateEnrollmentHtml(enrollmentDetails) {
+            if (!enrollmentDetails || enrollmentDetails.length === 0) {
+                return '<p>Not enrolled in any courses currently.</p>';
+            }
+
+            const tableHeader = `
+                <thead>
+                    <tr>
+                        <th>Course ID</th>
+                        <th>Course Name</th>
+                        <th>Partner</th>
+                        <th>Grade</th>
+                        <th>Semester</th>
+                        <th>Year</th>
+                    </tr>
+                </thead>
+            `;
+            const tableRows = enrollmentDetails.map(course => `
+                <tr>
+                    <td>${course.courseId}</td>
+                    <td>${course.courseName}</td>
+                    <td>${course.partner}</td>
+                    <td>${course.grade}</td>
+                    <td>${course.semester}</td>
+                    <td>${course.year}</td>
+                </tr>
+            `).join('');
+            return `
+                <table id="student-enrolled-courses-table" border="1" style="width:100%; border-collapse: collapse;">
+                    ${tableHeader}
+                    <tbody>
+                        ${tableRows}
+                    </tbody>
+                </table>
+            `;
+        }
+
+        async function handleEnrollmentEvent(event) {
+            event.preventDefault();
+            const email = document.getElementById('student-email').value;
+            const studentId = document.getElementById('enrollment-student-id').value;
+            const courseId = document.getElementById('enrollment-course-id').value;
+            const year = document.getElementById('enrollment-year').value;
+            const semester = document.getElementById('enrollment-semester').value;
+            try {
+                const response = await apiCall(`${API_BASE_URL}/registration/enroll`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        studentId: studentId,
+                        courseId: courseId,
+                        year: year,
+                        semester: semester
+                    })
+                });
+                displayStudentInfo(localStorage.getItem('loggedInEmail'));
+            } catch (error) {
+                console.error('Error during enrollment:', error);
+                showToast('Enrollment error. Please try again.');
+            }
+        }
+
+        async function displayAdminInfo(email) {
+            hideAllAuthViews();
+            const container = document.getElementById('admin-details-container');
+            const content = `
+                <p id="admin-email-display">Email: ${email}</p>
+            `;
+            if (container) {
+                container.innerHTML = content;
+            }
+            document.getElementById('admin-container').style.display = 'block';
+            document.getElementById('add-course-form').reset();
+        }
+
+        async function handleCourseAddition(event) {
+            event.preventDefault();
+            const courseId = document.getElementById('add-course-id').value;
+            const courseName = document.getElementById('add-course-name').value;
+            const partner = document.getElementById('add-course-partner').value;
+            const rating = document.getElementById('add-course-rating').value;
+            const certType = document.getElementById('add-course-certificate-type').value;
+            const duration = document.getElementById('add-course-duration').value;
+
+            try {
+                const response = await apiCall(`${API_BASE_URL}/registration/course`, {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        courseId: courseId,
+                        courseName: courseName,
+                        partner: partner,
+                        rating: rating,
+                        certificateType: certType,
+                        duration: duration
+                    })
+                });
+                displayAdminInfo(localStorage.getItem('loggedInEmail'));
+            } catch (error) {
+                console.error('Error during course addition:', error);
+                showToast('Course addition error. Please try again.');
+            }
+        }
+
+        window.onload = showLoginView;
+    </script>
+
+</body>
+
+</html>

@@ -1,0 +1,283 @@
+:root {
+    --bg-color: #f5f7fa;
+    --container-bg: #ffffff;
+    --text-primary: #2d3748;
+    --text-secondary: #718096;
+    --accent-color: #3182ce;
+    --success-color: #48bb78;
+    --error-color: #e53e3e;
+    --border-color: #e2e8f0;
+    --input-focus-shadow: 0 0 0 3px rgba(66, 153, 225, 0.2);
+}
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background-color: var(--bg-color);
+    color: var(--text-primary);
+    line-height: 1.5;
+    margin: 0;
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+}
+
+/* --- Containers --- */
+/* Common styles for all main views */
+#login-container,
+#register-student-container,
+#register-admin-container,
+#student-container,
+#admin-container {
+    background-color: var(--container-bg);
+    padding: 40px;
+    border-radius: 12px;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    width: 100%;
+    max-width: 450px; /* Standard width for auth forms */
+    margin: auto;
+}
+
+/* Wider containers for dashboard views */
+#student-container,
+#admin-container {
+    max-width: 900px;
+    align-self: flex-start; /* Allows dashboards to sit comfortably at the top if tall */
+    margin-top: 40px;
+}
+
+/* --- Typography --- */
+h1, h2 {
+    color: var(--text-primary);
+    margin-top: 0;
+    font-weight: 600;
+}
+
+h1 { font-size: 1.8rem; }
+h2 { font-size: 1.5rem; margin-bottom: 1.5rem; }
+p { color: var(--text-secondary); }
+
+a {
+    color: var(--accent-color);
+    text-decoration: none;
+    font-weight: 500;
+    transition: color 0.2s ease;
+}
+
+a:hover {
+    color: #2c5282; /* Darker shade of accent */
+    text-decoration: underline;
+}
+
+/* --- Forms --- */
+form div {
+    margin-bottom: 1.25rem;
+}
+
+label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--text-primary);
+}
+
+/* General Input Styles */
+input[type="text"],
+input[type="password"],
+input[type="email"],
+input[type="number"] {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    font-size: 1rem;
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    transition: all 0.2s ease-in-out;
+    color: var(--text-primary);
+}
+
+input:focus {
+    outline: none;
+    border-color: var(--accent-color);
+    box-shadow: var(--input-focus-shadow);
+}
+
+/* Special handling for the 'Admin' checkbox to align it nicely */
+#login-form div:nth-child(3) {
+    display: flex;
+    align-items: center;
+}
+
+#login-form div:nth-child(3) label {
+    margin-bottom: 0;
+    margin-right: 0.75rem;
+    order: 1; /* Move label after checkbox if desired, or keep as is */
+}
+
+input[type="checkbox"] {
+    width: 1.2rem;
+    height: 1.2rem;
+    cursor: pointer;
+}
+
+/* --- Buttons --- */
+button[type="submit"] {
+    width: 100%;
+    padding: 0.75rem 1.5rem;
+    background-color: var(--accent-color);
+    color: white;
+    font-size: 1rem;
+    font-weight: 600;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+button[type="submit"]:hover {
+    background-color: #2b6cb0; /* Slightly darker on hover */
+}
+
+button[type="submit"]:active {
+    transform: translateY(1px);
+}
+
+/* --- Navigation Links Area --- */
+form + p {
+    text-align: center;
+    margin-top: 1.5rem;
+    font-size: 0.9rem;
+}
+
+form + p a {
+    display: inline-block;
+    margin: 0 5px;
+}
+
+/* --- Dashboards Specifics --- */
+#student-details-card,
+#admin-details-container,
+#enrollment-form-container,
+#course-form-container {
+    margin-bottom: 2rem;
+    padding-bottom: 2rem;
+    border-bottom: 1px solid var(--border-color);
+}
+
+#student-details-card p,
+#admin-details-container p {
+    margin: 0.5rem 0;
+    font-size: 1.1rem;
+    color: var(--text-primary);
+}
+
+/* --- Tables (for Enrolled Courses) --- */
+table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    margin-top: 1rem;
+    font-size: 0.95rem;
+}
+
+th {
+    background-color: #f8fafc;
+    text-align: left;
+    font-weight: 600;
+    padding: 1rem;
+    border-bottom: 2px solid var(--border-color);
+    color: var(--text-secondary);
+}
+
+td {
+    padding: 1rem;
+    border-bottom: 1px solid var(--border-color);
+    color: var(--text-primary);
+}
+
+tr:last-child td {
+    border-bottom: none;
+}
+
+/* --- Toast Notifications --- */
+#toast-container {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 1000;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.toast {
+    background-color: var(--container-bg);
+    color: var(--text-primary);
+    padding: 1rem 1.5rem;
+    border-radius: 8px;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    min-width: 300px;
+    max-width: 400px;
+    border-left: 4px solid var(--accent-color);
+    animation: slideInRight 0.3s ease-out forwards;
+    opacity: 0;
+    transform: translateX(100%);
+}
+
+.toast.error {
+    border-left-color: var(--error-color);
+}
+
+.toast.success {
+    border-left-color: var(--success-color);
+}
+
+.toast.fade-out {
+    animation: fadeOutRight 0.3s ease-in forwards;
+}
+
+@keyframes slideInRight {
+    from { opacity: 0; transform: translateX(100%); }
+    to { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes fadeOutRight {
+    from { opacity: 1; transform: translateX(0); }
+    to { opacity: 0; transform: translateX(100%); }
+}
+
+/* Responsive adjustments for smaller screens */
+@media (max-width: 600px) {
+    #login-container,
+    #register-student-container,
+    #register-admin-container,
+    #student-container,
+    #admin-container {
+        padding: 20px;
+    }
+    
+    th, td {
+        padding: 0.5rem;
+    }
+    
+    #student-enrolled-courses-list {
+        overflow-x: auto;
+    }
+
+    #toast-container {
+        width: 100%;
+        padding: 0 20px;
+        right: 0;
+        top: 10px;
+    }
+    
+    .toast {
+        min-width: auto;
+        width: 100%;
+    }
+}
