@@ -14,7 +14,7 @@ import com.courseregistration.model.Admin;
 public class AdminDAO {
     private final JdbcTemplate jdbcTemplate;
 
-    // RowMapper for converting a ResultSet row into a User object
+    // RowMapper for converting a ResultSet row into an Admin object
     private final RowMapper<Admin> adminRowMapper = (rs, rowNum) -> new Admin(
             rs.getString("Email"),
             rs.getString("Password"));

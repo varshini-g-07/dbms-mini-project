@@ -1,7 +1,6 @@
 package com.courseregistration.dao;
 
 import com.courseregistration.model.EnrollmentDetail;
-//import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
