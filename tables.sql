@@ -3,7 +3,8 @@ CREATE TABLE IF NOT EXISTS Students (
     Student_ID INT PRIMARY KEY AUTO_INCREMENT,
     First_Name VARCHAR(50) NOT NULL,
     Last_Name VARCHAR(50) NOT NULL,
-    Email VARCHAR(100) UNIQUE
+    Email VARCHAR(100) UNIQUE,
+	Password VARCHAR(50) NOT NULL
 );
 
 -- Table 2: Courses (Strong Entity)
@@ -29,4 +30,9 @@ CREATE TABLE IF NOT EXISTS Enrollments (
     -- Foreign Key Constraints
     FOREIGN KEY (Student_ID) REFERENCES Students(Student_ID),
     FOREIGN KEY (Course_ID) REFERENCES Courses(Course_ID)
+);
+
+CREATE TABLE IF NOT EXISTS Admins (
+	Email VARCHAR(100) PRIMARY KEY,
+    Password VARCHAR(50) NOT NULL
 );

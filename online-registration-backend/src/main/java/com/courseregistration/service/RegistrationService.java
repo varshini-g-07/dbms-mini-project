@@ -71,13 +71,13 @@ public class RegistrationService {
         Student student = studentDAO.getStudentById(studentId);
 
         if (student != null) {
-            System.out.printf("✅ Student Found: ID %d, Name: %s %s, Email: %s\n",
+            System.out.printf("Student Found: ID %d, Name: %s %s, Email: %s\n",
                     student.getStudentId(),
                     student.getFirstName(),
                     student.getLastName(),
                     student.getEmail());
         } else {
-            System.out.printf("❌ Error: Student with ID %d not found.\n", studentId);
+            System.out.printf("Error: Student with ID %d not found.\n", studentId);
         }
     }
 
@@ -93,10 +93,10 @@ public class RegistrationService {
      */
     public boolean updateStudent(Student student) {
         if (studentDAO.updateStudent(student)) {
-            System.out.printf("✅ Successfully updated details for Student ID %d.\n", student.getStudentId());
+            System.out.printf("Successfully updated details for Student ID %d.\n", student.getStudentId());
             return true;
         } else {
-            System.out.printf("❌ Failed to update details for Student ID %d. (ID might not exist or database error).\n",
+            System.out.printf("Failed to update details for Student ID %d. (ID might not exist or database error).\n",
                     student.getStudentId());
             return false;
         }
@@ -109,24 +109,24 @@ public class RegistrationService {
     public boolean deleteStudentAccount(int studentId) {
         // 1. Check if student exists
         if (studentDAO.getStudentById(studentId) == null) {
-            System.out.printf("❌ Deletion failed: Student with ID %d does not exist.\n", studentId);
+            System.out.printf("Deletion failed: Student with ID %d does not exist.\n", studentId);
             return false;
         }
 
         // 2. BUSINESS RULE CHECK: Must be unenrolled from all courses
         if (enrollmentDAO.hasAnyEnrollments(studentId)) {
             System.out.printf(
-                    "❌ Deletion blocked: Student %d is still enrolled in active courses. Please unenroll first.\n",
+                    "Deletion blocked: Student %d is still enrolled in active courses. Please unenroll first.\n",
                     studentId);
             return false;
         }
 
         // 3. Perform Deletion
         if (studentDAO.deleteStudent(studentId)) {
-            System.out.printf("✅ Student account ID %d successfully deleted.\n", studentId);
+            System.out.printf("Student account ID %d successfully deleted.\n", studentId);
             return true;
         } else {
-            System.out.printf("❌ Deletion failed due to a database error for ID %d.\n", studentId);
+            System.out.printf("Deletion failed due to a database error for ID %d.\n", studentId);
             return false;
         }
     }
@@ -158,31 +158,31 @@ public class RegistrationService {
         // 1. Check for enrollments (Business Logic)
         if (enrollmentDAO.hasStudentsEnrolled(courseId)) {
             System.out.printf(
-                    "⚠️ Warning: Course %s has active enrollments. Removing student enrollment records first...\n",
+                    "Warning: Course %s has active enrollments. Removing student enrollment records first...\n",
                     courseId);
 
             // 2. Delete enrollments
             boolean success = enrollmentDAO.deleteEnrollmentsByCourseId(courseId);
 
             if (success) {
-                System.out.printf("✅ Successfully cleared enrollments for %s.\n", courseId);
+                System.out.printf("Successfully cleared enrollments for %s.\n", courseId);
             } else {
                 System.out.printf(
-                        "❌ Critical Error: Failed to clear enrollments for %s due to a database issue. Aborting course deletion.\n",
+                        "Critical Error: Failed to clear enrollments for %s due to a database issue. Aborting course deletion.\n",
                         courseId);
                 return false;
             }
         } else {
-            System.out.printf("ℹ️ No active enrollments found for course %s. Proceeding directly to course deletion.\n",
+            System.out.printf("ℹNo active enrollments found for course %s. Proceeding directly to course deletion.\n",
                     courseId);
         }
 
         // 3. Delete the course itself
         if (courseDAO.deleteCourse(courseId)) {
-            System.out.printf("✅ Course %s successfully removed from the catalog.\n", courseId);
+            System.out.printf("Course %s successfully removed from the catalog.\n", courseId);
             return true;
         } else {
-            System.out.printf("❌ Failed to delete course %s. It may not exist in the catalog.\n", courseId);
+            System.out.printf("Failed to delete course %s. It may not exist in the catalog.\n", courseId);
             return false;
         }
     }
@@ -214,15 +214,15 @@ public class RegistrationService {
     public boolean handleUnenrollment(int studentId, String courseId) {
         // Check if the enrollment exists before trying to delete
         if (!enrollmentDAO.checkIfAlreadyEnrolled(studentId, courseId)) {
-            System.out.printf("❌ Error: Student %d is not currently enrolled in course %s.\n", studentId, courseId);
+            System.out.printf("Error: Student %d is not currently enrolled in course %s.\n", studentId, courseId);
             return false;
         }
 
         if (enrollmentDAO.unenrollStudent(studentId, courseId)) {
-            System.out.printf("✅ Student %d successfully unenrolled from course %s.\n", studentId, courseId);
+            System.out.printf("Student %d successfully unenrolled from course %s.\n", studentId, courseId);
             return true;
         } else {
-            System.out.println("❌ Unenrollment failed due to a database issue.");
+            System.out.println("Unenrollment failed due to a database issue.");
             return false;
         }
     }

@@ -216,6 +216,9 @@ async function displayStudentInfo(email) {
     const container = document.getElementById('student-container');
     container.style.display = 'block';
 
+    // Auto-fill the Student ID in the enrollment form for convenience
+    document.getElementById('enrollment-student-id').value = student.studentId;
+
     const detailsContainer = document.getElementById('student-details-container');
     detailsContainer.innerHTML = `
         <div id="student-details-card">
@@ -232,9 +235,6 @@ async function displayStudentInfo(email) {
             </div>
         </div>
     `;
-
-    // Auto-fill the Student ID in the enrollment form for convenience
-    document.getElementById('enrollment-student-id').value = student.studentId;
 }
 
 function generateEnrollmentHtml(enrollmentDetails) {
@@ -357,6 +357,31 @@ async function handleCourseAddition(event) {
         document.getElementById('add-course-form').reset();
     } catch (error) {
         showToast(error.message || 'Failed to add course.', 'error');
+    }
+}
+
+async function handleCourseDeletion(event) {
+    event.preventDefault();
+    const courseId = document.getElementById('delete-course-id').value;
+
+    if (!courseId) {
+        showToast('Please enter a Course ID to delete.', 'error');
+        return;
+    }
+
+    try {
+        const response = await apiCall(`${API_BASE_URL}/registration/deletecourse?courseId=${encodeURIComponent(courseId)}`, {
+            method: 'POST',
+        });
+
+        if (response === true) {
+            showToast(`Course ${courseId} successfully deleted.`, 'success');
+        } else {
+            throw new Error(`Deletion failed for course ${courseId}.`);
+        }
+        document.getElementById('delete-course-form').reset();
+    } catch (error) {
+        showToast(error.message || 'Failed to delete course.', 'error');
     }
 }
 

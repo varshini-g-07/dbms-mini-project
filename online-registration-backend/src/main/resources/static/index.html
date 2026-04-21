@@ -97,7 +97,8 @@
             <!-- Student data will be dynamically inserted here -->
             <p>Loading student information...</p>
         </div>
-        <hr/>
+        <hr />
+        <br />
         <div id="enrollment-form-container">
             <h2>Enroll in a New Course</h2>
             <form id="enrollment-form" onsubmit="handleEnrollmentEvent(event)">
@@ -156,7 +157,16 @@
                 <button type="submit">Add</button>
             </form>
         </div>
-
+        <div id="delete-course-form-container">
+            <h1>Delete Course from Catalog</h1>
+            <form id="delete-course-form" onsubmit="handleCourseDeletion(event)">
+                <div>
+                    <label for="delete-course-id">Course ID</label>
+                    <input type="text" id="delete-course-id" name="course-id" required>
+                </div>
+                <button type="submit" class="delete-action-btn">Delete Course</button>
+            </form>
+        </div>
     </div>
     <div id="toast-container"></div>
     <script src="script.js"></script>

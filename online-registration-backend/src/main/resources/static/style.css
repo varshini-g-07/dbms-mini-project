@@ -163,7 +163,8 @@ form + p a {
 #student-details-card,
 #admin-details-container,
 #enrollment-form-container,
-#course-form-container {
+#course-form-container,
+#delete-course-form-container {
     margin-bottom: 2rem;
     padding-bottom: 2rem;
     border-bottom: 1px solid var(--border-color);
@@ -326,3 +327,27 @@ tr:last-child td {
     background-color: var(--error-color);
     color: white;
 }
+
+/* ... (Existing CSS) ... */
+
+/* New Delete Button Style (Admin Dashboard) */
+.delete-action-btn {
+    width: 100%;
+    padding: 0.75rem 1.5rem;
+    background-color: var(--error-color); /* Red for deletion */
+    color: white;
+    font-size: 1rem;
+    font-weight: 600;
+}
+
+.delete-action-btn:hover {
+    background-color: #c53030; /* Darker red on hover */
+}
+
+/* Separator styling for the new form container */
+#delete-course-form-container {
+    padding-top: 2rem;
+    border-top: 1px solid var(--border-color);
+    border-bottom: none; /* Remove border from the last element in the container */
+}
+

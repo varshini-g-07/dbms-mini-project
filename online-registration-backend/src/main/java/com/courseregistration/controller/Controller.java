@@ -153,6 +153,18 @@ public class Controller {
         }
     }
 
+    @PostMapping("/registration/deletecourse")
+    public ResponseEntity<?> deleteCourse(@RequestParam String courseId) {
+        try {
+            boolean status = registrationService.deleteCourseFromCatalog(courseId);
+            return new ResponseEntity<>(status, HttpStatus.OK);
+        } catch (IllegalArgumentException e) {
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
+        } catch (Exception e) {
+            return new ResponseEntity<>("Internal Server Error during unenrollment.", HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
     @GetMapping("/student")
     public ResponseEntity<?> getStudentByEmail(String email) {
         System.out.println("Getting student with ID: " + email);
