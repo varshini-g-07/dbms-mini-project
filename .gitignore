@@ -1,1 +1,3 @@
 target/
+.vscode/
+dbms-mini-project.code-workspace
