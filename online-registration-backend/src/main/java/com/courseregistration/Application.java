@@ -19,7 +19,7 @@ public class Application {
         // Once this runs, the application will be accessible at http://localhost:8080/
         System.out.println("\n---------------------------------------------------------");
         System.out.println("Spring Boot Application started successfully!");
-        System.out.println("Access API endpoints at http://localhost:8080/api/v1/");
+        System.out.println("Access API endpoints at http://localhost:8080");
         System.out.println("---------------------------------------------------------\n");
     }
 }
